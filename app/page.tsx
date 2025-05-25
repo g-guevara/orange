@@ -57,7 +57,7 @@ export default function Home() {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="text-4xl sm:text-5xl md:text-9xl font-bold mb-6">
-          <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-black-900">IDEAPAD</span>
+          <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-black-900">IDEALINK</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
               Conecta con personas talentosas para transformar tu visión en realidad o únete a proyectos  que coincidan con tus habilidades.

@@ -8,8 +8,8 @@ import { AuthProvider } from '@/hooks/use-auth';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'IdeaSphere - Connect & Build',
-  description: 'Share your ideas or join exciting projects',
+  title: 'IdeaLink - Connect & Build',
+  description: 'Share your ideas ',
 };
 
 export default function RootLayout({
