@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ideas } from '@/data/ideas';
+import { useIdeas } from '@/contexts/ideas-context';
 import IdeaCard from '@/components/idea-card';
 import ParticleBackground from '@/components/canvas/particles';
 import { Input } from '@/components/ui/input';
@@ -9,16 +9,17 @@ import { Search, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Obtener categorías y profesiones únicas para los filtros
-const categories = Array.from(new Set(ideas.map(idea => idea.category)));
-const allProfessions = ideas.flatMap(idea => idea.professions);
-const professions = Array.from(new Set(allProfessions));
-
 export default function Home() {
+  const { ideas, isLoading } = useIdeas();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedProfession, setSelectedProfession] = useState<string | null>(null);
   const [filteredIdeas, setFilteredIdeas] = useState(ideas);
+
+  // Obtener categorías y profesiones únicas para los filtros
+  const categories = Array.from(new Set(ideas.map(idea => idea.category)));
+  const allProfessions = ideas.flatMap(idea => idea.professions);
+  const professions = Array.from(new Set(allProfessions));
 
   useEffect(() => {
     let results = ideas;
@@ -42,7 +43,7 @@ export default function Home() {
     }
     
     setFilteredIdeas(results);
-  }, [searchTerm, selectedCategory, selectedProfession]);
+  }, [searchTerm, selectedCategory, selectedProfession, ideas]);
 
   return (
     <>
@@ -57,10 +58,32 @@ export default function Home() {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="text-4xl sm:text-5xl md:text-9xl font-bold mb-6">
-          <span className="text-primary bg-clip-text text-transparent bg-gradient-to-b from-orange-500 to-black-900">IDEALINK</span>
-            </h1>
+<span style={{
+  fontFamily: "'Inter', sans-serif",
+  fontSize: "6.5rem",
+  fontWeight: "900",
+  color: "#FF4500",
+  animation: "neonGlow 4s ease-in-out infinite",
+  textShadow: "0 0 5px #FF4500, 0 0 10px #FF4500, 0 0 20px #FF4500, 0 0 40px #FF4500, 0 0 80px #FF4500",
+}}>
+  IDEALINK
+</span>
+<style>{`
+  @keyframes neonGlow {
+    0%, 100% {
+      text-shadow: 0 0 5px #FF4500, 0 0 10px #FF4500, 0 0 20px #FF4500, 0 0 40px #FF4500, 0 0 80px #FF4500;
+      color: #FF4500;
+    }
+    50% {
+      text-shadow: 0 0 2px #FF4500, 0 0 4px #FF4500, 0 0 8px #FF4500, 0 0 20px #FF4500, 0 0 40px #FF4500;
+      color: #FF4500;
+    }
+  }
+`}</style>
+
+          </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Conecta con personas talentosas para transformar tu visión en realidad o únete a proyectos  que coincidan con tus habilidades.
+              Conecta con personas talentosas para transformar tu visión en realidad o únete a proyectos que coincidan con tus habilidades.
             </p>
           </motion.div>
 
@@ -130,7 +153,24 @@ export default function Home() {
             </div>
           </div>
 
-          {filteredIdeas.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 h-64">
+                    <div className="h-6 bg-zinc-800 rounded w-3/4 mb-4"></div>
+                    <div className="h-4 bg-zinc-800 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-zinc-800 rounded w-2/3 mb-4"></div>
+                    <div className="flex gap-2 mb-4">
+                      <div className="h-6 bg-zinc-800 rounded w-16"></div>
+                      <div className="h-6 bg-zinc-800 rounded w-20"></div>
+                    </div>
+                    <div className="h-4 bg-zinc-800 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredIdeas.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredIdeas.map((idea, index) => (
                 <IdeaCard key={idea.id} idea={idea} index={index} />

@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import Header from '@/components/header';
 import { AuthProvider } from '@/hooks/use-auth';
+import { IdeasProvider } from '@/contexts/ideas-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,8 +23,10 @@ export default function RootLayout({
       <body className={`${inter.className} bg-[#1a0800] text-white min-h-screen border-[#FF4500] border-4`}>
         <ThemeProvider>
           <AuthProvider>
-            <Header />
-            <main className="pt-16">{children}</main>
+            <IdeasProvider>
+              <Header />
+              <main className="pt-16">{children}</main>
+            </IdeasProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

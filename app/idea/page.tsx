@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ideas } from '@/data/ideas';
+import { useIdeas } from '@/contexts/ideas-context';
 import { Idea } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,26 +20,63 @@ export default function IdeaDetail() {
   const id = searchParams.get('id');
   const router = useRouter();
   const { user } = useAuth();
+  const { ideas, isLoading } = useIdeas();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [applicationSubmitted, setApplicationSubmitted] = useState(false);
 
   useEffect(() => {
-    const foundIdea = ideas.find(i => i.id === id);
-    
-    if (!foundIdea) {
-      router.push('/');
-      return;
+    if (!isLoading && ideas.length > 0 && id) {
+      const foundIdea = ideas.find(i => i.id === id);
+      
+      if (!foundIdea) {
+        router.push('/');
+        return;
+      }
+      
+      setIdea(foundIdea);
     }
-    
-    setIdea(foundIdea);
-  }, [id, router]);
+  }, [id, router, ideas, isLoading]);
+
+  if (isLoading) {
+    return (
+      <>
+        <ParticleBackground />
+        <div className="min-h-screen pt-8 pb-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-5xl">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-zinc-800 rounded w-32"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-zinc-800 rounded w-20"></div>
+              <div className="h-10 bg-zinc-800 rounded w-3/4"></div>
+              <div className="h-4 bg-zinc-800 rounded w-1/2"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 h-24"></div>
+              ))}
+            </div>
+            <div className="space-y-4">
+              <div className="h-6 bg-zinc-800 rounded w-48"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-zinc-800 rounded w-full"></div>
+                <div className="h-4 bg-zinc-800 rounded w-5/6"></div>
+                <div className="h-4 bg-zinc-800 rounded w-4/6"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (!idea) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Cargando...</p>
-      </div>
+      <>
+        <ParticleBackground />
+        <div className="min-h-screen flex items-center justify-center">
+          <p>Idea no encontrada</p>
+        </div>
+      </>
     );
   }
 
@@ -135,11 +172,9 @@ export default function IdeaDetail() {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Descripción</h2>
             <div className="prose prose-invert max-w-none">
-<p className="text-base text-white whitespace-pre-line bg-[#FF4500] px-4 py-2 rounded-md shadow-[0_0_15px_#FF4500]">
-  {idea.longDescription}
-</p>
-
-
+              <p className="text-base text-white whitespace-pre-line bg-[#FF4500] px-4 py-2 rounded-md shadow-[0_0_15px_#FF4500]">
+                {idea.longDescription}
+              </p>
             </div>
           </div>
           
@@ -179,13 +214,24 @@ export default function IdeaDetail() {
             <div className="bg-zinc-900/50 rounded-lg p-6 border border-zinc-800">
               <h2 className="text-xl font-semibold mb-2">¿Interesado en este proyecto?</h2>
               <p className="text-muted-foreground mb-4">
-                Aplica ahora para colaborar con {idea.author.name} en esta emocionante idea.
+                Aplica ahora para colaborar con {idea.author.name} en esta idea.
               </p>
               
               {user ? (
-                <Button onClick={handleApply} className="w-full sm:w-auto">
-                  Aplicar a este proyecto
-                </Button>
+                <>
+                  {user.id === idea.author.id ? (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground mb-4">Esta es tu propia idea</p>
+                      <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                        Ir al Dashboard
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button onClick={handleApply} className="w-full sm:w-auto">
+                      Aplicar a este proyecto
+                    </Button>
+                  )}
+                </>
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-amber-400">

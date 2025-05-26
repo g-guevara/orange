@@ -6,10 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import ParticleBackground from '@/components/canvas/particles';
-import { ideas } from '@/data/ideas';
-import IdeaSubmissionForm from '@/components/dashboard/idea-submission-form';
-import MyIdeasTab from '@/components/dashboard/my-ideas-tab';
-import ApplicationsTab from '@/components/dashboard/applications-tab';
+import IdeaSubmissionForm from './idea-submission-form';
+import MyIdeasTab from './my-ideas-tab';
+import ApplicationsTab from './applications-tab';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { formatDistance } from 'date-fns';
@@ -129,9 +128,6 @@ export default function DashboardPage() {
     return null;
   }
 
-  // Filter ideas created by the user
-  const userIdeas = ideas.filter(idea => idea.author.id === user.id);
-
   const tabVariants = {
     hidden: { 
       opacity: 0, 
@@ -156,6 +152,14 @@ export default function DashboardPage() {
         ease: "easeIn"
       }
     }
+  };
+
+  const handleCreateIdea = () => {
+    setActiveTab('submit');
+  };
+
+  const handleIdeaSuccess = () => {
+    setActiveTab('myideas');
   };
 
   return (
@@ -214,7 +218,7 @@ export default function DashboardPage() {
                 animate="visible"
                 exit="exit"
               >
-                <MyIdeasTab userIdeas={userIdeas} />
+                <MyIdeasTab onCreateIdea={handleCreateIdea} />
               </motion.div>
             </TabsContent>
 
@@ -233,7 +237,7 @@ export default function DashboardPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <IdeaSubmissionForm onSuccess={() => setActiveTab('myideas')} />
+                    <IdeaSubmissionForm onSuccess={handleIdeaSuccess} />
                   </CardContent>
                 </Card>
               </motion.div>

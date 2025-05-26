@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2, Plus, X } from 'lucide-react';
+import { useIdeas } from '@/contexts/ideas-context';
+import { Loader2, Plus, X, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const categories = [
@@ -46,8 +47,10 @@ interface IdeaSubmissionFormProps {
 
 export default function IdeaSubmissionForm({ onSuccess }: IdeaSubmissionFormProps) {
   const { user } = useAuth();
+  const { addIdea } = useIdeas();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newProfession, setNewProfession] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   
   const form = useForm<IdeaFormValues>({
     resolver: zodResolver(ideaSchema),
@@ -63,7 +66,7 @@ export default function IdeaSubmissionForm({ onSuccess }: IdeaSubmissionFormProp
     }
   });
 
-  const { control, watch, setValue } = form;
+  const { control, watch, setValue, reset } = form;
   const professions = watch('professions') || [];
 
   const handleAddProfession = () => {
@@ -83,16 +86,53 @@ export default function IdeaSubmissionForm({ onSuccess }: IdeaSubmissionFormProp
     setIsSubmitting(true);
     
     try {
-      // En una app real, esto enviaría datos a una API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Idea enviada:', values);
-      onSuccess();
+      await addIdea({
+        ...values,
+        author: {
+          id: user.id,
+          name: user.name,
+          email: user.email
+        }
+      });
+
+      setSubmitSuccess(true);
+      reset();
+      
+      // Mostrar mensaje de éxito por 2 segundos y luego llamar onSuccess
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        onSuccess();
+      }, 2000);
+      
     } catch (error) {
       console.error('Error al enviar la idea:', error);
+      // Aquí podrías mostrar un toast de error
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (submitSuccess) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex flex-col items-center justify-center py-12 text-center"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+        >
+          <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
+        </motion.div>
+        <h3 className="text-xl font-semibold mb-2">¡Idea Publicada Exitosamente!</h3>
+        <p className="text-muted-foreground">
+          Tu idea ha sido publicada y ya está disponible para que otros colaboradores la vean.
+        </p>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
