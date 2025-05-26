@@ -266,11 +266,7 @@ export default function IdeaDetail() {
                       Ver mis solicitudes
                     </Button>
                   </Link>
-                  <Link href={`/idea?id=${idea.id}`}>
-                    <Button variant="ghost" onClick={() => window.location.reload()}>
-                      Actualizar estado
-                    </Button>
-                  </Link>
+
                 </div>
               </CardContent>
             </Card>

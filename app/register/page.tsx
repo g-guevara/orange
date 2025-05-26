@@ -179,31 +179,7 @@ Crea tu cuenta
               </form>
             </Form>
             
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full bg-[#FF4500]/20" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-[#2a1000] px-2 text-muted-foreground">
-                  O continuar con
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex flex-col space-y-2">
-              <Button 
-                variant="outline" 
-                className="bg-[#1a0800] border-[#FF4500]/20 hover:bg-[#2a1000]"
-              >
-                Continuar con Google
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-[#1a0800] border-[#FF4500]/20 hover:bg-[#2a1000]"
-              >
-                Continuar con GitHub
-              </Button>
-            </div>
+
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Menu, X, LogIn, UserPlus, Pause, Play } from 'lucide-react';
@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useAnimationState } from '@/hooks/use-animation-state';
+import { motion } from 'framer-motion';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,20 +17,31 @@ export default function Header() {
   const { user, logout } = useAuth();
   const { isAnimating, toggleAnimation } = useAnimationState();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
+  const navRef = useRef<HTMLDivElement>(null);
+  const [indicatorProps, setIndicatorProps] = useState({ left: 0, width: 0 });
 
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const activeLink = navRef.current?.querySelector(`[data-path="${pathname}"]`) as HTMLElement;
+    if (activeLink) {
+      setIndicatorProps({
+        left: activeLink.offsetLeft,
+        width: activeLink.offsetWidth,
+      });
+    }
+  }, [pathname]);
+
   const NavItem = ({ href, title }: { href: string; title: string }) => (
     <Link
       href={href}
+      data-path={href}
       className={cn(
-        'text-sm font-medium transition-colors hover:text-primary',
+        'relative text-sm font-medium transition-colors px-2',
         pathname === href ? 'text-white' : 'text-muted-foreground'
       )}
       onClick={() => setIsOpen(false)}
@@ -50,12 +62,19 @@ export default function Header() {
           <span className="font-bold text-xl tracking-tight">IdeaLink</span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-4">
+        <nav className="hidden md:flex items-center space-x-4 relative" ref={navRef}>
+          {/* Línea animada */}
+          <motion.div
+            className="absolute bottom-0 h-[2px] bg-white"
+            animate={{ left: indicatorProps.left, width: indicatorProps.width }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          />
+          {/* Botón animación */}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleAnimation}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 text-muted-foreground"
           >
             {isAnimating ? (
               <>
@@ -69,7 +88,7 @@ export default function Header() {
               </>
             )}
           </Button>
-          
+
           <NavItem href="/" title="Explorar Ideas" />
           {user ? (
             <>
@@ -104,56 +123,6 @@ export default function Header() {
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
-
-      {isOpen && (
-        <div className="md:hidden px-4 py-4 bg-black/95 backdrop-blur-md">
-          <nav className="flex flex-col space-y-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleAnimation}
-              className="flex items-center gap-1 justify-start"
-            >
-              {isAnimating ? (
-                <>
-                  <Pause size={16} />
-                  <span>Detener Animación</span>
-                </>
-              ) : (
-                <>
-                  <Play size={16} />
-                  <span>Iniciar Animación</span>
-                </>
-              )}
-            </Button>
-            
-            <NavItem href="/" title="Explorar Ideas" />
-            {user ? (
-              <>
-                <NavItem href="/dashboard" title="Dashboard" />
-                <Button variant="ghost" onClick={logout} className="justify-start">
-                  Cerrar Sesión
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="w-full">
-                  <Button variant="ghost" className="w-full justify-start">
-                    <LogIn size={16} className="mr-2" />
-                    <span>Iniciar Sesión</span>
-                  </Button>
-                </Link>
-                <Link href="/register" className="w-full">
-                  <Button variant="outline" className="w-full justify-start">
-                    <UserPlus size={16} className="mr-2" />
-                    <span>Registrarse</span>
-                  </Button>
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      )}
     </header>
   );
 }
