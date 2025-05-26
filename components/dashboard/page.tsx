@@ -6,10 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import ParticleBackground from '@/components/canvas/particles';
-import IdeaSubmissionForm from './idea-submission-form';
-import MyIdeasTab from './my-ideas-tab';
-import ApplicationsTab from './applications-tab';
-import MyRequestsTab from './my-requests-tab';
+import IdeaSubmissionForm from '@/app/dashboard/idea-submission-form';
+import MyIdeasTab from '@/app/dashboard/my-ideas-tab';
+import ApplicationsTab from '@/app/dashboard/applications-tab';
+import MyRequestsTab from '@/components/dashboard/my-requests-tab';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardPage() {
@@ -19,7 +19,9 @@ export default function DashboardPage() {
 
   // Redirect to login if not authenticated
   if (!user) {
-    typeof window !== 'undefined' && router.push('/login');
+    if (typeof window !== 'undefined') {
+      router.push('/login');
+    }
     return null;
   }
 
