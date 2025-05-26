@@ -64,7 +64,15 @@ export default function Home() {
   fontWeight: "900",
   color: "#FF4500",
   animation: "neonGlow 4s ease-in-out infinite",
-  textShadow: "0 0 5px #FF4500, 0 0 10px #FF4500, 0 0 20px #FF4500, 0 0 40px #FF4500, 0 0 80px #FF4500",
+  textShadow: `
+    0 0 5px #FF4500,
+    0 0 10px #FF4500,
+    0 0 20px #FF4500,
+    0 0 40px #FF4500,
+    0 0 80px #FF4500
+  `,
+  transform: "scaleX(1.8)",
+  display: "inline-block", // necesario para que scaleX funcione correctamente
 }}>
   IDEALINK
 </span>
