@@ -31,21 +31,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  // Mock login function - in a real app, this would call an API
+  // Login function that calls the API
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Validate credentials (this is just a demo)
-      if (email === 'demo@example.com' && password === 'password') {
-        const user = { id: '1', name: 'Demo User', email };
-        setUser(user);
-        localStorage.setItem('user', JSON.stringify(user));
-      } else {
-        throw new Error('Invalid credentials');
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
       }
+
+      const user = data.user;
+      setUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
       throw error;
     } finally {
@@ -53,14 +59,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Mock register function
+  // Register function that calls the API
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const user = { id: '1', name, email };
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      const user = data.user;
       setUser(user);
       localStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
