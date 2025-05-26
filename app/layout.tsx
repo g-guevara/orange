@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import Header from '@/components/header';
 import { AuthProvider } from '@/hooks/use-auth';
 import { IdeasProvider } from '@/contexts/ideas-context';
+import { ApplicationsProvider } from '@/contexts/applications-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,8 +25,10 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <IdeasProvider>
-              <Header />
-              <main className="pt-16">{children}</main>
+              <ApplicationsProvider>
+                <Header />
+                <main className="pt-16">{children}</main>
+              </ApplicationsProvider>
             </IdeasProvider>
           </AuthProvider>
         </ThemeProvider>
