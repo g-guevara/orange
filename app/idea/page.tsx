@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import ApplyForm from '@/components/apply-form';
 import ParticleBackground from '@/components/canvas/particles';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function IdeaDetail() {
   const searchParams = useSearchParams();
@@ -24,6 +25,8 @@ export default function IdeaDetail() {
   const [idea, setIdea] = useState<Idea | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [applicationSubmitted, setApplicationSubmitted] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [checkingApplication, setCheckingApplication] = useState(false);
 
   useEffect(() => {
     if (!isLoading && ideas.length > 0 && id) {
@@ -37,6 +40,33 @@ export default function IdeaDetail() {
       setIdea(foundIdea);
     }
   }, [id, router, ideas, isLoading]);
+
+  // Función para verificar si ya aplicó a esta idea
+  const checkIfAlreadyApplied = async () => {
+    if (!user || !idea) return;
+    
+    setCheckingApplication(true);
+    try {
+      const response = await fetch(`/api/applications?userId=${user.id}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const hasUserApplied = data.applications.some((app: any) => app.ideaId === idea.id);
+        setHasApplied(hasUserApplied);
+      }
+    } catch (error) {
+      console.error('Error checking application status:', error);
+    } finally {
+      setCheckingApplication(false);
+    }
+  };
+
+  // Verificar si ya aplicó cuando se cargan la idea y el usuario
+  useEffect(() => {
+    if (idea && user && user.id !== idea.author.id) {
+      checkIfAlreadyApplied();
+    }
+  }, [idea, user]);
 
   if (isLoading) {
     return (
@@ -91,6 +121,11 @@ export default function IdeaDetail() {
   const handleApplicationSubmit = () => {
     setIsApplying(false);
     setApplicationSubmitted(true);
+    setHasApplied(true);
+  };
+
+  const handleCancelApplication = () => {
+    setIsApplying(false);
   };
 
   return (
@@ -191,7 +226,56 @@ export default function IdeaDetail() {
 
           <Separator className="my-8 bg-zinc-800" />
           
-          {applicationSubmitted ? (
+          {/* Sección de aplicación actualizada */}
+          {user && user.id === idea.author.id ? (
+            // Es el autor de la idea
+            <div className="bg-zinc-900/50 rounded-lg p-6 border border-zinc-800">
+              <h2 className="text-xl font-semibold mb-2">Esta es tu idea</h2>
+              <p className="text-muted-foreground mb-4">
+                Puedes ver las aplicaciones que has recibido desde tu panel de control.
+              </p>
+              <div className="flex gap-4">
+                <Link href="/dashboard?tab=applications">
+                  <Button variant="outline">
+                    Ver Aplicaciones
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button>
+                    Ir al Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ) : hasApplied ? (
+            // Ya aplicó a esta idea
+            <Card className="border-blue-500/30 bg-blue-900/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-400">
+                  <CheckCircle2 size={20} />
+                  Ya aplicaste a este proyecto
+                </CardTitle>
+                <CardDescription>
+                  Puedes ver el estado de tu solicitud en tu panel de control.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4">
+                  <Link href="/dashboard?tab=myrequests">
+                    <Button variant="outline">
+                      Ver mis solicitudes
+                    </Button>
+                  </Link>
+                  <Link href={`/idea?id=${idea.id}`}>
+                    <Button variant="ghost" onClick={() => window.location.reload()}>
+                      Actualizar estado
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          ) : applicationSubmitted ? (
+            // Aplicación recién enviada
             <Card className="border-green-500/30 bg-green-900/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-400">
@@ -203,14 +287,24 @@ export default function IdeaDetail() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-4">
                   Serás notificado si el creador del proyecto desea discutir más detalles.
                 </p>
+                <Link href="/dashboard?tab=myrequests">
+                  <Button variant="outline">
+                    Ver mis solicitudes
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ) : isApplying ? (
-            <ApplyForm ideaId={idea.id} onSubmit={handleApplicationSubmit} />
+            // Formulario de aplicación
+            <ApplyForm 
+              ideaId={idea.id} 
+              onSubmit={handleApplicationSubmit}
+            />
           ) : (
+            // Botón para aplicar
             <div className="bg-zinc-900/50 rounded-lg p-6 border border-zinc-800">
               <h2 className="text-xl font-semibold mb-2">¿Interesado en este proyecto?</h2>
               <p className="text-muted-foreground mb-4">
@@ -218,27 +312,30 @@ export default function IdeaDetail() {
               </p>
               
               {user ? (
-                <>
-                  {user.id === idea.author.id ? (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground mb-4">Esta es tu propia idea</p>
-                      <Button variant="outline" onClick={() => router.push('/dashboard')}>
-                        Ir al Dashboard
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button onClick={handleApply} className="w-full sm:w-auto">
-                      Aplicar a este proyecto
-                    </Button>
+                <div className="flex items-center gap-4">
+                  <Button 
+                    onClick={handleApply} 
+                    className="bg-[#FF4500] hover:bg-[#FF6B35]"
+                    disabled={checkingApplication}
+                  >
+                    {checkingApplication ? 'Verificando...' : 'Aplicar a este proyecto'}
+                  </Button>
+                  {checkingApplication && (
+                    <span className="text-sm text-muted-foreground">
+                      Verificando si ya aplicaste...
+                    </span>
                   )}
-                </>
+                </div>
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-amber-400">
                     <AlertCircle size={18} />
                     <p className="text-sm">Necesitas iniciar sesión para aplicar a este proyecto.</p>
                   </div>
-                  <Button onClick={() => router.push('/login')} className="w-full sm:w-auto">
+                  <Button 
+                    onClick={() => router.push('/login')} 
+                    className="bg-[#FF4500] hover:bg-[#FF6B35]"
+                  >
                     Iniciar sesión para aplicar
                   </Button>
                 </div>

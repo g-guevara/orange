@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,14 +26,28 @@ const statusIcons = {
 export default function MyRequestsTab() {
   const { user } = useAuth();
   const { userApplications, isLoading, getUserApplications } = useApplications();
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
-    if (user) {
+    // Solo cargar una vez cuando el componente se monta Y el usuario está disponible
+    if (user && !hasInitialized && !fetchedRef.current) {
+      fetchedRef.current = true;
+      setHasInitialized(true);
       getUserApplications(user.id);
     }
-  }, [user, getUserApplications]);
+  }, [user]); // Solo depende del user
 
-  if (isLoading) {
+  // Función para refrescar manualmente
+  const handleRefresh = () => {
+    if (user) {
+      fetchedRef.current = false;
+      setHasInitialized(false);
+      getUserApplications(user.id);
+    }
+  };
+
+  if (!hasInitialized && isLoading) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -41,7 +55,13 @@ export default function MyRequestsTab() {
         transition={{ duration: 0.3 }}
         className="space-y-6"
       >
-        <h2 className="text-xl font-semibold mb-4">Mis Solicitudes</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Mis Solicitudes</h2>
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#FF4500]"></div>
+            <span className="text-sm text-muted-foreground">Cargando...</span>
+          </div>
+        </div>
         <div className="grid gap-4">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="bg-zinc-900/50 border-zinc-800 animate-pulse">
@@ -75,11 +95,21 @@ export default function MyRequestsTab() {
     >
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Mis Solicitudes</h2>
-        {userApplications.length > 0 && (
-          <Badge variant="secondary" className="px-3 py-1">
-            {userApplications.length} solicitud{userApplications.length !== 1 ? 'es' : ''}
-          </Badge>
-        )}
+        <div className="flex items-center gap-4">
+          {userApplications.length > 0 && (
+            <Badge variant="secondary" className="px-3 py-1">
+              {userApplications.length} solicitud{userApplications.length !== 1 ? 'es' : ''}
+            </Badge>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Actualizando...' : 'Actualizar'}
+          </Button>
+        </div>
       </div>
       
       {userApplications.length === 0 ? (
@@ -96,11 +126,16 @@ export default function MyRequestsTab() {
             <p className="text-muted-foreground mb-4">
               Explora las ideas disponibles y aplica a los proyectos que te interesen
             </p>
-            <Link href="/">
-              <Button className="bg-[#FF4500] hover:bg-[#FF6B35]">
-                Explorar Ideas
+            <div className="flex gap-4 justify-center">
+              <Link href="/">
+                <Button className="bg-[#FF4500] hover:bg-[#FF6B35]">
+                  Explorar Ideas
+                </Button>
+              </Link>
+              <Button variant="outline" onClick={handleRefresh}>
+                Verificar de nuevo
               </Button>
-            </Link>
+            </div>
           </CardContent>
         </Card>
       ) : (

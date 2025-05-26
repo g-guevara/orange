@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useApplications } from '@/contexts/applications-context';
+import { motion } from 'framer-motion';
 
 const applicationSchema = z.object({
   name: z.string().min(2, { message: 'El nombre es requerido' }),
@@ -30,6 +31,7 @@ export default function ApplyForm({ ideaId, onSubmit }: ApplyFormProps) {
   const { user } = useAuth();
   const { addApplication } = useApplications();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
@@ -45,6 +47,7 @@ export default function ApplyForm({ ideaId, onSubmit }: ApplyFormProps) {
     if (!user) return;
     
     setIsSubmitting(true);
+    setError(null);
     
     try {
       await addApplication({
@@ -57,17 +60,32 @@ export default function ApplyForm({ ideaId, onSubmit }: ApplyFormProps) {
       });
       
       onSubmit();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al enviar la aplicación:', error);
-      // Aquí podrías mostrar un toast de error
+      setError(error.message || 'Error al enviar la aplicación');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCancel = () => {
+    onSubmit(); // Esto cerrará el formulario
+  };
+
   return (
-    <div className="bg-zinc-900/50 rounded-lg p-6 border border-zinc-800">
+    <motion.div 
+      className="bg-zinc-900/50 rounded-lg p-6 border border-zinc-800"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <h2 className="text-xl font-semibold mb-6">Aplicar a este proyecto</h2>
+      
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-md">
+          <p className="text-red-400 text-sm">{error}</p>
+        </div>
+      )}
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -142,7 +160,7 @@ export default function ApplyForm({ ideaId, onSubmit }: ApplyFormProps) {
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => onSubmit()}
+              onClick={handleCancel}
               disabled={isSubmitting}
             >
               Cancelar
@@ -160,6 +178,6 @@ export default function ApplyForm({ ideaId, onSubmit }: ApplyFormProps) {
           </div>
         </form>
       </Form>
-    </div>
+    </motion.div>
   );
 }

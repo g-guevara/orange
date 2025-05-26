@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Application } from '@/types';
 
 type ApplicationsContextType = {
@@ -20,9 +20,10 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [userApplications, setUserApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastFetchedUserId, setLastFetchedUserId] = useState<string | null>(null);
 
   // Función para agregar una nueva aplicación
-  const addApplication = async (applicationData: Omit<Application, 'id' | 'createdAt' | 'status'>) => {
+  const addApplication = useCallback(async (applicationData: Omit<Application, 'id' | 'createdAt' | 'status'>) => {
     try {
       const response = await fetch('/api/applications', {
         method: 'POST',
@@ -46,10 +47,10 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       console.error('Error adding application:', error);
       throw error;
     }
-  };
+  }, []);
 
   // Función para actualizar el estado de una aplicación
-  const updateApplicationStatus = async (applicationId: string, status: 'accepted' | 'rejected') => {
+  const updateApplicationStatus = useCallback(async (applicationId: string, status: 'accepted' | 'rejected') => {
     try {
       const response = await fetch(`/api/applications/${applicationId}/status`, {
         method: 'PATCH',
@@ -78,27 +79,38 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       console.error('Error updating application status:', error);
       throw error;
     }
-  };
+  }, []);
 
   // Función para obtener las aplicaciones de un usuario específico
-  const getUserApplications = async (userId: string) => {
+  const getUserApplications = useCallback(async (userId: string) => {
+    // Evitar llamadas duplicadas
+    if (isLoading || lastFetchedUserId === userId) {
+      return;
+    }
+
     setIsLoading(true);
+    setLastFetchedUserId(userId);
+    
     try {
       const response = await fetch(`/api/applications?userId=${userId}`);
       const data = await response.json();
       
       if (data.success) {
         setUserApplications(data.applications);
+      } else {
+        console.error('Error fetching user applications:', data.error);
+        setUserApplications([]);
       }
     } catch (error) {
       console.error('Error fetching user applications:', error);
+      setUserApplications([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, lastFetchedUserId]);
 
   // Función para obtener aplicaciones recibidas por un autor de ideas
-  const getIdeaAuthorApplications = async (ideaAuthorId: string) => {
+  const getIdeaAuthorApplications = useCallback(async (ideaAuthorId: string) => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/applications?ideaAuthorId=${ideaAuthorId}`);
@@ -106,30 +118,39 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       
       if (data.success) {
         setApplications(data.applications);
+      } else {
+        console.error('Error fetching idea author applications:', data.error);
+        setApplications([]);
       }
     } catch (error) {
       console.error('Error fetching idea author applications:', error);
+      setApplications([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Función para refrescar las aplicaciones
-  const refreshApplications = async () => {
-    // Esta función puede ser expandida según las necesidades
+  const refreshApplications = useCallback(async () => {
+    if (lastFetchedUserId) {
+      setLastFetchedUserId(null); // Reset para permitir nueva carga
+      await getUserApplications(lastFetchedUserId);
+    }
+  }, [lastFetchedUserId, getUserApplications]);
+
+  const value = {
+    applications,
+    userApplications,
+    addApplication,
+    updateApplicationStatus,
+    refreshApplications,
+    isLoading,
+    getUserApplications,
+    getIdeaAuthorApplications
   };
 
   return (
-    <ApplicationsContext.Provider value={{
-      applications,
-      userApplications,
-      addApplication,
-      updateApplicationStatus,
-      refreshApplications,
-      isLoading,
-      getUserApplications,
-      getIdeaAuthorApplications
-    }}>
+    <ApplicationsContext.Provider value={value}>
       {children}
     </ApplicationsContext.Provider>
   );
