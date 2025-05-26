@@ -8,8 +8,8 @@ import { useAuth } from '@/hooks/use-auth';
 import ParticleBackground from '@/components/canvas/particles';
 import IdeaSubmissionForm from './idea-submission-form';
 import MyIdeasTab from './my-ideas-tab';
-import ApplicationsTab from './applications-tab';
-import MyRequestsTab from '@/components/dashboard/my-requests-tab'; // Importar el componente correcto
+import ApplicationsTab from '@/components/dashboard/applications-tab';
+import MyRequestsTab from '@/components/dashboard/my-requests-tab';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardPage() {

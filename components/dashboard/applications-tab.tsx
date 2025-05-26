@@ -96,7 +96,7 @@ export default function ApplicationsTab() {
         >
           <Card className="bg-zinc-900/50 border-zinc-800">
             <CardContent className="text-center py-8">
-              <p className="text-muted-foreground">No hay aplicaciones en esta categoría</p>
+              <p className="text-muted-foreground">No hay aplicaciones </p>
             </CardContent>
           </Card>
         </motion.div>
