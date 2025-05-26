@@ -135,9 +135,11 @@ export default function IdeaDetail() {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Descripción</h2>
             <div className="prose prose-invert max-w-none">
-              <p className="text-base text-muted-foreground whitespace-pre-line">
-                {idea.longDescription}
-              </p>
+<p className="text-base text-white whitespace-pre-line bg-[#FF4500] px-4 py-2 rounded-md shadow-[0_0_15px_#FF4500]">
+  {idea.longDescription}
+</p>
+
+
             </div>
           </div>
           

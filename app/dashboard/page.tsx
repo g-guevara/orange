@@ -32,35 +32,53 @@ export default function DashboardPage() {
       <div className="min-h-screen pt-8 pb-20 px-4 sm:px-6 lg:px-8 mx-auto max-w-6xl">
         <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
         
-        <Tabs defaultValue="submit" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-8">
-            <TabsTrigger value="submit">Submit Idea</TabsTrigger>
-            <TabsTrigger value="myideas">My Ideas</TabsTrigger>
-            <TabsTrigger value="applications">Applications</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="submit">
-            <Card className="bg-zinc-900/50 border-zinc-800">
-              <CardHeader>
-                <CardTitle>Submit a New Idea</CardTitle>
-                <CardDescription>
-                  Share your project idea and find talented collaborators
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <IdeaSubmissionForm onSuccess={() => setActiveTab('myideas')} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="myideas">
-            <MyIdeasTab userIdeas={userIdeas} />
-          </TabsContent>
-          
-          <TabsContent value="applications">
-            <ApplicationsTab />
-          </TabsContent>
-        </Tabs>
+<Tabs defaultValue="submit" value={activeTab} onValueChange={setActiveTab}>
+  <TabsList className="grid grid-cols-3 mb-8 bg-[#FF4500] text-black rounded-md overflow-hidden shadow-[0_0_10px_#FF4500,0_0_20px_#FF4500,0_0_30px_#FF4500]">
+    <TabsTrigger 
+      value="submit" 
+      className="data-[state=active]:bg-[#cc3700] data-[state=active]:text-black hover:bg-[#e03d00]"
+    >
+      Submit Idea
+    </TabsTrigger>
+    <TabsTrigger 
+      value="myideas" 
+      className="data-[state=active]:bg-[#cc3700] data-[state=active]:text-black hover:bg-[#e03d00]"
+    >
+      My Ideas
+    </TabsTrigger>
+    <TabsTrigger 
+      value="applications" 
+      className="data-[state=active]:bg-[#cc3700] data-[state=active]:text-black hover:bg-[#e03d00]"
+    >
+      Applications
+    </TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="submit">
+    <Card className="bg-zinc-900/50 border-zinc-800">
+      <CardHeader>
+        <CardTitle>Submit a New Idea</CardTitle>
+        <CardDescription>
+          Share your project idea and find talented collaborators
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <IdeaSubmissionForm onSuccess={() => setActiveTab('myideas')} />
+      </CardContent>
+    </Card>
+  </TabsContent>
+
+  <TabsContent value="myideas">
+    <MyIdeasTab userIdeas={userIdeas} />
+  </TabsContent>
+
+  <TabsContent value="applications">
+    <ApplicationsTab />
+  </TabsContent>
+</Tabs>
+
+
+
       </div>
     </>
   );
