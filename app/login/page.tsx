@@ -57,15 +57,9 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md bg-[#2a1000]/50 border-[#FF4500]/30">
           <CardHeader className="space-y-4 text-center">
-<CardTitle
-  className="text-4xl font-black tracking-tight bg-gradient-to-r from-[#FF4500] to-[#FF4500] text-transparent bg-clip-text"
-  style={{
-    fontFamily: "'Inter', sans-serif",
-    textShadow: '0 0 8px #FF4500, 0 0 16px #FF4500',
-  }}
->
-Bienvenido 
-</CardTitle>
+            <CardTitle className="text-4xl font-black tracking-tight bg-gradient-to-r from-[#FF4500] to-[#ffb688] text-transparent bg-clip-text" style={{ fontFamily: "'Inter', sans-serif" }}>
+              Bienvenido de nuevo
+            </CardTitle>
             <CardDescription className="text-lg">
               Inicia sesión en tu cuenta para continuar
             </CardDescription>
